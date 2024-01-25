@@ -25,7 +25,7 @@
         #set ($payaraVersion = "5.2022.5")
         #set ($microprofileVersion = "4.0")
     #else
-        #set ($payaraVersion = "6.2023.8")
+        #set ($payaraVersion = "6.2023.12")
         #set ($microprofileVersion = "5.0")
     #end
 #end
