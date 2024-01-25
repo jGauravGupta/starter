@@ -186,11 +186,11 @@
                 </configuration>
             </plugin>
 #if ((${platform} == 'micro'))
-            <!-- Execute 'mvn clean package payara-micro:start' to run the application. -->
+            <!-- Execute 'mvn clean package payara-micro:dev' to run the application. -->
             <plugin>
                 <groupId>fish.payara.maven.plugins</groupId>
                 <artifactId>payara-micro-maven-plugin</artifactId>
-                <version>2.0</version>
+                <version>2.1</version>
                 <configuration>
                     <payaraVersion>${payara.version}</payaraVersion>
 #if (${deployWar} == "true")
