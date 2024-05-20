@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2023 Payara Foundation and/or its affiliates. All rights reserved.
+ * Copyright (c) 2023-2024 Payara Foundation and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -256,4 +256,82 @@ input[type="submit"]:hover {
 
 .form-check-label {
     padding-top: 7px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    left: 0;
+    top: 0;
+    width: 98%;
+    height: 98%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    margin-top: 1%;
+    margin-left: 1%;
+}
+
+.modal-content {
+    display: flex;
+    flex-direction: row;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 10px;
+    border: 1px solid #888;
+    width: 99%;
+    height: 99%;
+}
+
+.half {
+    width: 50%;
+    padding: 10px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#livePreview {
+    border: 1px solid #ccc;
+    height: 90%;
+}
+
+#sourceCode {
+    border: 1px solid #ccc;
+    height: 90%;
+    overflow-y: scroll;
+    width: 100%;
+}
+
+.inline-elements {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.inline-elements h2 {
+    margin: 0;
+    margin-right: 10px;
+}
+
+.inline-elements select {
+    margin: 0;
+}
+
+.CodeMirror {
+    height: 90%;
+    font-size: small;
+    border: 1px solid #ccc;
+    margin-top: 15px;
 }
