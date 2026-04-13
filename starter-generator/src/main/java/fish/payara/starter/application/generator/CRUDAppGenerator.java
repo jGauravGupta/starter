@@ -189,6 +189,11 @@ public class CRUDAppGenerator {
                             generateHTMLFrontend(model, entity, webapp);
                         }
                         generateHTMLFrontendBase(model, webapp);
+                    } else if ("vaadin".equals(generateWeb.toLowerCase())) {
+                        for (Entity entity : model.getEntities()) {
+                            generateVaadinFrontend(model, entity, java);
+                        }
+                        generateVaadinFrontendBase(model, java);
                     }
                 }
             }
@@ -226,6 +231,33 @@ public class CRUDAppGenerator {
     private void generateJSFFrontend(ERModel model, Entity entity, File outputDir) {
         Map<String, Object> dataModel = createEntityDataModel(model, entity, _package, domainLayer, repositoryLayer);
         generate("template/jsf", "entity.xhtml.ftl", dataModel.get("entityNameLowerCase") + ".xhtml", dataModel, outputDir);
+    }
+
+    private void generateVaadinFrontendBase(ERModel model, File outputDir) {
+        try {
+            Configuration cfg = createFreemarkerConfiguration("template/vaadin");
+            String viewPackage = _package + "." + controllerLayer;
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("model", model);
+            dataModel.put("package", viewPackage);
+            processTemplateToFile(cfg, "MainLayout.java.ftl", dataModel, outputDir, "MainLayout.java");
+            processTemplateToFile(cfg, "HomeView.java.ftl", dataModel, outputDir, "HomeView.java");
+            processTemplateToFile(cfg, "AboutView.java.ftl", dataModel, outputDir, "AboutView.java");
+        } catch (IOException | TemplateException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void generateVaadinFrontend(ERModel model, Entity entity, File outputDir) {
+        try {
+            Configuration cfg = createFreemarkerConfiguration("template/vaadin");
+            Map<String, Object> dataModel = createEntityDataModel(model, entity, _package, domainLayer, repositoryLayer);
+            String viewPackage = _package + "." + controllerLayer;
+            dataModel.put("package", viewPackage);
+            processTemplateToFile(cfg, "EntityView.java.ftl", dataModel, outputDir, entity.getClassName() + "View.java");
+        } catch (IOException | TemplateException e) {
+            e.printStackTrace();
+        }
     }
 
     private void generateBackendUtils(String _package, File outputDir) {
