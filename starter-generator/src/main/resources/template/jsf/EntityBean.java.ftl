@@ -47,17 +47,25 @@ public class ${beanClass} implements Serializable {
         return null;
     }
     public String save() {
+<#if model.jakartaVersion gt 10>
+        ${entityRepository}.save(${entityInstance});
+<#else>
         if (${entityInstance}.${pkGetter}() == null) {
              ${entityRepository}.create(${entityInstance});
         } else {
              ${entityRepository}.edit(${entityInstance});
         }
+</#if>
         ${entityInstance} = new ${EntityClass}(); // reset
         return null;
     }
 
     public String remove(${pkType} ${pkName}) {
+<#if model.jakartaVersion gt 10>
+        ${entityRepository}.deleteById(${pkName});
+<#else>
         ${entityRepository}.remove(${entityRepository}.find(${pkName}));
+</#if>
         return null;
     }
 
