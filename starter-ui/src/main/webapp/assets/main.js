@@ -351,17 +351,26 @@ const noneAuthCheckbox = document.getElementById('noneAuth');
 const fileRealmCheckbox = document.getElementById('formAuthFileRealm');
 const databaseCheckbox = document.getElementById('formAuthDB');
 const ldapCheckbox = document.getElementById('formAuthLDAP');
+const basicAuthFileRealmCheckbox = document.getElementById('basicAuthFileRealm');
+const basicAuthDatabaseCheckbox = document.getElementById('basicAuthDB');
+const basicAuthLdapCheckbox = document.getElementById('basicAuthLDAP');
 
 coreRadioButton.addEventListener('change', function (event) {
     if (event.target.checked) {
-        // Disable Form Authentication checkboxes for the Core Profile
+        // Disable Form Authentication and Basic Authentication checkboxes for the Core Profile
         fileRealmCheckbox.disabled = true;
         databaseCheckbox.disabled = true;
         ldapCheckbox.disabled = true;
+        basicAuthFileRealmCheckbox.disabled = true;
+        basicAuthDatabaseCheckbox.disabled = true;
+        basicAuthLdapCheckbox.disabled = true;
 
         fileRealmCheckbox.checked = false;
         databaseCheckbox.checked = false;
         ldapCheckbox.checked = false;
+        basicAuthFileRealmCheckbox.checked = false;
+        basicAuthDatabaseCheckbox.checked = false;
+        basicAuthLdapCheckbox.checked = false;
         noneAuthCheckbox.checked = true;
     }
 });
@@ -369,12 +378,15 @@ coreRadioButton.addEventListener('change', function (event) {
 platformRadioButton.addEventListener('change', toggleFormAuthCheckboxes);
 webRadioButton.addEventListener('change', toggleFormAuthCheckboxes);
 
-// Function to toggle Form Authentication checkboxes for Platform and Web profiles
+// Function to toggle Form Authentication and Basic Authentication checkboxes for Platform and Web profiles
 function toggleFormAuthCheckboxes(event) {
     if (platformRadioButton.checked || webRadioButton.checked) {
-        // Enable Form Authentication checkboxes for Platform or Web Profile
+        // Enable Form Authentication and Basic Authentication checkboxes for Platform or Web Profile
         fileRealmCheckbox.disabled = false;
         databaseCheckbox.disabled = false;
         ldapCheckbox.disabled = false;
+        basicAuthFileRealmCheckbox.disabled = false;
+        basicAuthDatabaseCheckbox.disabled = false;
+        basicAuthLdapCheckbox.disabled = false;
     }
 }

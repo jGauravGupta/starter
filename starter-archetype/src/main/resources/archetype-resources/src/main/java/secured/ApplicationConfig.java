@@ -1,17 +1,18 @@
 package ${package}.secured;
 
 import ${eePackage}.annotation.security.DeclareRoles;
-import ${eePackage}.enterprise.context.ApplicationScoped;<% if (formAuthDB) { %>
-import ${eePackage}.inject.Named;<% } %>
+import ${eePackage}.enterprise.context.ApplicationScoped;<% if (formAuthDB || basicAuthDB) { %>
+import ${eePackage}.inject.Named;<% } %><% if (formAuthDB || formAuthLDAP) { %>
 import ${eePackage}.security.enterprise.authentication.mechanism.http.FormAuthenticationMechanismDefinition;
-import ${eePackage}.security.enterprise.authentication.mechanism.http.LoginToContinue;<% if (formAuthDB) { %>
+import ${eePackage}.security.enterprise.authentication.mechanism.http.LoginToContinue;<% } %><% if (basicAuthDB || basicAuthLDAP) { %>
+import ${eePackage}.security.enterprise.authentication.mechanism.http.BasicAuthenticationMechanismDefinition;<% } %><% if (formAuthDB || basicAuthDB) { %>
 import ${eePackage}.security.enterprise.identitystore.DatabaseIdentityStoreDefinition;
 import ${eePackage}.security.enterprise.identitystore.Pbkdf2PasswordHash;
 import java.util.HashMap;
-import java.util.Map;<% } %><% if (formAuthLDAP) { %>
+import java.util.Map;<% } %><% if (formAuthLDAP || basicAuthLDAP) { %>
 import ${eePackage}.security.enterprise.identitystore.LdapIdentityStoreDefinition;<% } %>
 
-<% if (formAuthDB) { %>
+<% if (formAuthDB || basicAuthDB) { %>
 @DatabaseIdentityStoreDefinition(
     callerQuery = "#{'select password from caller where name = ?'}",
     groupsQuery = "select group_name from caller_groups where caller_name = ?",
@@ -20,23 +21,24 @@ import ${eePackage}.security.enterprise.identitystore.LdapIdentityStoreDefinitio
     hashAlgorithmParameters = {
         "${'${applicationConfig.hashAlgorithmParameters}'}"
     }
-)<% } %><% if (formAuthLDAP) { %>
+)<% } %><% if (formAuthLDAP || basicAuthLDAP) { %>
 @LdapIdentityStoreDefinition(
     url = "ldap://localhost:33389/",
     callerBaseDn = "ou=caller,dc=jsr375,dc=net",
     groupSearchBase = "ou=group,dc=jsr375,dc=net"
-)<% } %>
+)<% } %><% if (formAuthDB || formAuthLDAP) { %>
 @FormAuthenticationMechanismDefinition(
     loginToContinue = @LoginToContinue(
         loginPage="/login.xhtml",
         errorPage="/login_error.xhtml"
     )
-)
+)<% } %><% if (basicAuthDB || basicAuthLDAP) { %>
+@BasicAuthenticationMechanismDefinition(realmName = "payara-realm")<% } %>
 @DeclareRoles({ "user", "admin" })
-@ApplicationScoped<% if (formAuthDB) { %>
+@ApplicationScoped<% if (formAuthDB || basicAuthDB) { %>
 @Named<% } %>
 public class ApplicationConfig {
-<% if (formAuthDB) { %>
+<% if (formAuthDB || basicAuthDB) { %>
     public String[] getHashAlgorithmParameters() {
         return getHashAlgorithmParameterMap().entrySet()
                 .stream()
