@@ -28,7 +28,7 @@
         <welcome-file>index.html</welcome-file>
     #end
     </welcome-file-list>
-<% if (formAuthFileRealm || formAuthDB || formAuthLDAP || basicAuthFileRealm || basicAuthDB || basicAuthLDAP) { %>
+<% if (formAuthFileRealm || formAuthDB || formAuthLDAP) { %>
     <security-constraint>
         <display-name>Secured pages</display-name>
         <web-resource-collection>
@@ -62,15 +62,6 @@
             <form-error-page>/login_error.xhtml</form-error-page>
         </form-login-config>
     </login-config>
-<% } %>
-<% if (basicAuthFileRealm) { %>
-    <login-config>
-        <auth-method>BASIC</auth-method>
-        <!-- Default works with file realm -->
-        <realm-name>file</realm-name>
-    </login-config>
-<% } %>
-<% if (formAuthFileRealm || basicAuthFileRealm) { %>
     <security-role>
         <description>common user</description>
         <role-name>user</role-name>

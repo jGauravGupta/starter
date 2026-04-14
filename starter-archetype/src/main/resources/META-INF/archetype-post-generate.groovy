@@ -115,21 +115,20 @@ private generateSource(build, _package, platform, jakartaEEVersion,
     File newFolder = new File(outputDirectory.path + "/src/main/java/" + packagePath + "/" + restSubpackage)
     renameFolder(oldFolder, newFolder)
 
-    if (!auth.equals("formAuthDB") && !auth.equals("basicAuthDB")) {
+    if (!auth.equals("formAuthDB")) {
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/DatabaseSetup.java"))
     }
     
-    if (!auth.equals("formAuthLDAP") && !auth.equals("basicAuthLDAP")) {
+    if (!auth.equals("formAuthLDAP")) {
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/LdapSetup.java"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/resources/ldap-test.ldif"))
     }
 
-    if (!auth.equals("formAuthDB") && !auth.equals("formAuthLDAP") && !auth.equals("basicAuthDB") && !auth.equals("basicAuthLDAP")) {
+    if (!auth.equals("formAuthDB") && !auth.equals("formAuthLDAP")) {
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/ApplicationConfig.java"))
     }
     
-    if (!auth.equals("formAuthFileRealm") && !auth.equals("formAuthDB") && !auth.equals("formAuthLDAP")
-            && !auth.equals("basicAuthFileRealm") && !auth.equals("basicAuthDB") && !auth.equals("basicAuthLDAP")) {
+    if (!auth.equals("formAuthFileRealm") && !auth.equals("formAuthDB") && !auth.equals("formAuthLDAP")) {
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/AdminResource.java"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/LogoutResource.java"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/ProtectedResource.java"))
@@ -140,10 +139,6 @@ private generateSource(build, _package, platform, jakartaEEVersion,
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/secured/users.xhtml"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/secured"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/admin"))
-    } else if (auth.equals("basicAuthFileRealm") || auth.equals("basicAuthDB") || auth.equals("basicAuthLDAP")) {
-        // Basic Authentication uses the browser's native dialog; form login pages are not needed
-        FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/login.xhtml"))
-        FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/login_error.xhtml"))
     }
 }
 
@@ -169,9 +164,6 @@ private void bindEEPackage(String jakartaEEVersion, String mpConfig, String mpOp
         'formAuthFileRealm': auth.equals("formAuthFileRealm"),
         'formAuthDB': auth.equals("formAuthDB"),
         'formAuthLDAP': auth.equals("formAuthLDAP"),
-        'basicAuthFileRealm': auth.equals("basicAuthFileRealm"),
-        'basicAuthDB': auth.equals("basicAuthDB"),
-        'basicAuthLDAP': auth.equals("basicAuthLDAP"),
         'erDiagram': erDiagram.toBoolean()
     ]
     def engine = new SimpleTemplateEngine()
