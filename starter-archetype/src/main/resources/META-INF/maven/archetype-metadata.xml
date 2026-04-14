@@ -136,7 +136,7 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
         </requiredProperty>
         <requiredProperty key="auth">
             <defaultValue>none</defaultValue>
-            <validationRegex>^(none|formAuthFileRealm|formAuthDB|formAuthLDAP)$</validationRegex>
+            <validationRegex>^(none|formAuthFileRealm|formAuthDB|formAuthLDAP|jwtAuth)$</validationRegex>
         </requiredProperty>
         <requiredProperty key="erDiagram">
             <defaultValue>false</defaultValue>

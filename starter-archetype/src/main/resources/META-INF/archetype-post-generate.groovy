@@ -102,7 +102,7 @@ private generateSource(build, _package, platform, jakartaEEVersion,
     if (!docker.equalsIgnoreCase("true")) {
         FileUtils.forceDelete(new File(outputDirectory, "Dockerfile"))
     }
-    if (!mpConfig.equalsIgnoreCase("true")) {
+    if (!mpConfig.equalsIgnoreCase("true") && !auth.equals("jwtAuth")) {
         FileUtils.forceDelete(new File(outputDirectory, "src/main/resources/META-INF/microprofile-config.properties"))
     }
     if (!mpOpenAPI.equalsIgnoreCase("true")) {
@@ -128,11 +128,24 @@ private generateSource(build, _package, platform, jakartaEEVersion,
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/ApplicationConfig.java"))
     }
     
-    if (!auth.equals("formAuthFileRealm") && !auth.equals("formAuthDB") && !auth.equals("formAuthLDAP")) {
+    if (!auth.equals("jwtAuth")) {
+        FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/JwtSecuredResource.java"))
+    }
+
+    if (!auth.equals("formAuthFileRealm") && !auth.equals("formAuthDB") && !auth.equals("formAuthLDAP") && !auth.equals("jwtAuth")) {
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/AdminResource.java"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/LogoutResource.java"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/ProtectedResource.java"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured"))
+        FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/login.xhtml"))
+        FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/login_error.xhtml"))
+        FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/admin/admins.xhtml"))
+        FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/secured/users.xhtml"))
+        FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/secured"))
+        FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/admin"))
+    } else if (auth.equals("jwtAuth")) {
+        // JWT is stateless; no session-based logout, form login pages, or JSF security pages needed
+        FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/java/" + packagePath + "/secured/LogoutResource.java"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/login.xhtml"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/login_error.xhtml"))
         FileUtils.forceDelete(new File(outputDirectory.path + "/src/main/webapp/admin/admins.xhtml"))
@@ -164,6 +177,7 @@ private void bindEEPackage(String jakartaEEVersion, String mpConfig, String mpOp
         'formAuthFileRealm': auth.equals("formAuthFileRealm"),
         'formAuthDB': auth.equals("formAuthDB"),
         'formAuthLDAP': auth.equals("formAuthLDAP"),
+        'jwtAuth': auth.equals("jwtAuth"),
         'erDiagram': erDiagram.toBoolean()
     ]
     def engine = new SimpleTemplateEngine()

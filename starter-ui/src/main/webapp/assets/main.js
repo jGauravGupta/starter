@@ -351,17 +351,20 @@ const noneAuthCheckbox = document.getElementById('noneAuth');
 const fileRealmCheckbox = document.getElementById('formAuthFileRealm');
 const databaseCheckbox = document.getElementById('formAuthDB');
 const ldapCheckbox = document.getElementById('formAuthLDAP');
+const jwtAuthCheckbox = document.getElementById('jwtAuth');
 
 coreRadioButton.addEventListener('change', function (event) {
     if (event.target.checked) {
-        // Disable Form Authentication checkboxes for the Core Profile
+        // Disable Form Authentication and JWT Authentication checkboxes for the Core Profile
         fileRealmCheckbox.disabled = true;
         databaseCheckbox.disabled = true;
         ldapCheckbox.disabled = true;
+        jwtAuthCheckbox.disabled = true;
 
         fileRealmCheckbox.checked = false;
         databaseCheckbox.checked = false;
         ldapCheckbox.checked = false;
+        jwtAuthCheckbox.checked = false;
         noneAuthCheckbox.checked = true;
     }
 });
@@ -369,12 +372,13 @@ coreRadioButton.addEventListener('change', function (event) {
 platformRadioButton.addEventListener('change', toggleFormAuthCheckboxes);
 webRadioButton.addEventListener('change', toggleFormAuthCheckboxes);
 
-// Function to toggle Form Authentication checkboxes for Platform and Web profiles
+// Function to toggle Form Authentication and JWT Authentication checkboxes for Platform and Web profiles
 function toggleFormAuthCheckboxes(event) {
     if (platformRadioButton.checked || webRadioButton.checked) {
-        // Enable Form Authentication checkboxes for Platform or Web Profile
+        // Enable Form Authentication and JWT Authentication checkboxes for Platform or Web Profile
         fileRealmCheckbox.disabled = false;
         databaseCheckbox.disabled = false;
         ldapCheckbox.disabled = false;
+        jwtAuthCheckbox.disabled = false;
     }
 }
