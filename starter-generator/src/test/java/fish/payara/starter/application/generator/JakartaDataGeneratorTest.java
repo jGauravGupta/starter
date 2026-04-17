@@ -48,6 +48,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -434,5 +435,63 @@ class JakartaDataGeneratorTest {
                 "persistence.xml should declare version 2.1 for legacy javax (EE 8)");
         assertTrue(content.contains("persistence_2_1.xsd"),
                 "persistence.xml schema location should reference persistence_2_1.xsd for EE 8");
+    }
+
+    // -----------------------------------------------------------------------
+    // Bug-fix: REST controller – no duplicate FK field when name collides with
+    //          the primary repository field (e.g. self-referential entity)
+    // -----------------------------------------------------------------------
+
+    private static final String ER_DIAGRAM_SELF_REF = """
+            erDiagram
+                BID {
+                    int bidId PK
+                    decimal amount
+                }
+                BID }o--|| BID : bid
+            """;
+
+    private ERModel buildSelfRefModel(double jakartaVersion) {
+        ERDiagramParser parser = new ERDiagramParser();
+        ERModel model = parser.parse(ER_DIAGRAM_SELF_REF);
+        model.setImportPrefix("jakarta");
+        model.setJakartaVersion(jakartaVersion);
+        return model;
+    }
+
+    @Test
+    void jakartaEE11_noDuplicateFieldForSelfReferentialFkAttribute() throws IOException {
+        generate(buildSelfRefModel(11), "html");
+
+        String content = readFile(generatedFile(CONTROLLER_LAYER, "BidResource.java"));
+        long declarationCount = content.lines()
+                .filter(l -> l.contains("private") && l.contains("BidService") && l.contains("bidService"))
+                .count();
+        assertEquals(1, declarationCount,
+                "BidResource should declare bidService exactly once (self-referential FK must not re-declare the primary field)");
+    }
+
+    @Test
+    void jakartaEE11_noDuplicateImportForSelfReferentialFkAttribute() throws IOException {
+        generate(buildSelfRefModel(11), "html");
+
+        String content = readFile(generatedFile(CONTROLLER_LAYER, "BidResource.java"));
+        long importCount = content.lines()
+                .filter(l -> l.startsWith("import") && l.contains("BidService"))
+                .count();
+        assertEquals(1, importCount,
+                "BidResource should import BidService exactly once (self-referential FK must not add a duplicate import)");
+    }
+
+    @Test
+    void legacyEE10_noDuplicateFieldForSelfReferentialFkAttribute() throws IOException {
+        generate(buildSelfRefModel(10), "html");
+
+        String content = readFile(generatedFile(CONTROLLER_LAYER, "BidResource.java"));
+        long declarationCount = content.lines()
+                .filter(l -> l.contains("private") && l.contains("BidService") && l.contains("bidService"))
+                .count();
+        assertEquals(1, declarationCount,
+                "BidResource (EE 10) should declare bidService exactly once");
     }
 }
