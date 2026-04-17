@@ -18,7 +18,7 @@ package ${package};
 import ${EntityClass_FQN};
 import ${EntityRepository_FQN};
 <#list entity.attributes as attribute>
-    <#if model.getEntity(attribute.type)?? && !attribute.multi && attribute.getType() != EntityClass>
+    <#if model.getEntity(attribute.getType())?? && !attribute.multi && attribute.getType() != EntityClass>
 import ${EntityRepository_package}.${attribute.getType()}${EntityRepositorySuffix};
     </#if>
 </#list>
@@ -60,10 +60,11 @@ public class ${controllerClass} {
     private ${EntityRepository} ${entityRepository};
 
     <#list entity.attributes as attribute>
-        <#if model.getEntity(attribute.type)??>
-            <#if !attribute.multi && (attribute.name + EntityRepositorySuffix) != entityRepository>
+        <#if model.getEntity(attribute.getType())??>
+            <#assign fkFieldName = attribute.name + EntityRepositorySuffix>
+            <#if !attribute.multi && fkFieldName != entityRepository>
     @Inject
-    private ${attribute.getType()}${EntityRepositorySuffix} ${attribute.name}${EntityRepositorySuffix};
+    private ${attribute.getType()}${EntityRepositorySuffix} ${fkFieldName};
             </#if>
         </#if>
     </#list>
