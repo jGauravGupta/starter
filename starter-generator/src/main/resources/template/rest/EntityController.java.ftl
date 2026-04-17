@@ -18,12 +18,8 @@ package ${package};
 import ${EntityClass_FQN};
 import ${EntityRepository_FQN};
 <#list entity.attributes as attribute>
-    <#if model.getEntity(attribute.type)??>
-        <#if attribute.multi>
-        <#else>
+    <#if model.getEntity(attribute.getType())?? && !attribute.multi && attribute.getType() != EntityClass>
 import ${EntityRepository_package}.${attribute.getType()}${EntityRepositorySuffix};
-        </#if>
-    <#else>
     </#if>
 </#list>
 import ${model.importPrefix}.inject.Inject;
@@ -64,13 +60,17 @@ public class ${controllerClass} {
     private ${EntityRepository} ${entityRepository};
 
     <#list entity.attributes as attribute>
-        <#if model.getEntity(attribute.type)??>
-            <#if attribute.multi>
-            <#else>
+        <#if model.getEntity(attribute.getType())??>
+            <#-- Derive the repo field name from the FK entity TYPE (not attribute name) so that
+                 a custom attribute name that collides with the entity's own instance variable
+                 (e.g. name="bid" for a Bid->Payment FK set by AI) still resolves to the correct
+                 repository (e.g. paymentService).  For self-referential FKs the type-based name
+                 equals entityRepository, so the guard below suppresses the duplicate field. -->
+            <#assign fkFieldName = attribute.getType()?uncap_first + EntityRepositorySuffix>
+            <#if !attribute.multi && fkFieldName != entityRepository>
     @Inject
-    private ${attribute.getType()}${EntityRepositorySuffix} ${attribute.name}${EntityRepositorySuffix};
+    private ${attribute.getType()}${EntityRepositorySuffix} ${fkFieldName};
             </#if>
-        <#else>
         </#if>
     </#list>
 
@@ -98,8 +98,13 @@ public class ${controllerClass} {
         <#if model.getEntity(attribute.type)??>
             <#if attribute.multi>
             <#else>
+                <#assign fkRepoVar = attribute.getType()?uncap_first + EntityRepositorySuffix>
         if (${instanceName}.get${attribute.getTitleCaseName()}() != null && ${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}() != null) {
-            ${instanceName}.set${attribute.getTitleCaseName()}(${attribute.name}${EntityRepositorySuffix}.find(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()));
+<#if model.jakartaVersion gt 10>
+            ${instanceName}.set${attribute.getTitleCaseName()}(${fkRepoVar}.findById(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()).orElse(null));
+<#else>
+            ${instanceName}.set${attribute.getTitleCaseName()}(${fkRepoVar}.find(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()));
+</#if>
         } else {
             ${instanceName}.set${attribute.getTitleCaseName()}(null);
         }
@@ -107,7 +112,11 @@ public class ${controllerClass} {
         <#else>
         </#if>
     </#list>
+<#if model.jakartaVersion gt 10>
+        ${entityRepository}.save(${instanceName});
+<#else>
         ${entityRepository}.create(${instanceName});
+</#if>
         return HeaderUtil.createEntityCreationAlert(Response.created(new URI("/${applicationPath}/api/${entityApiUrl}/" + ${instanceName}.${pkGetter}())),
                 ENTITY_NAME, <#if isPKPrimitive>String.valueOf(${instanceName}.${pkGetter}())<#elseif pkType == "String">${instanceName}.${pkGetter}()<#else>${instanceName}.${pkGetter}().toString()</#if>)
                 .entity(${instanceName}).build();
@@ -136,8 +145,13 @@ public class ${controllerClass} {
         <#if model.getEntity(attribute.type)??>
             <#if attribute.multi>
             <#else>
+                <#assign fkRepoVar = attribute.getType()?uncap_first + EntityRepositorySuffix>
         if (${instanceName}.get${attribute.getTitleCaseName()}() != null && ${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}() != null) {
-            ${instanceName}.set${attribute.getTitleCaseName()}(${attribute.name}${EntityRepositorySuffix}.find(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()));
+<#if model.jakartaVersion gt 10>
+            ${instanceName}.set${attribute.getTitleCaseName()}(${fkRepoVar}.findById(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()).orElse(null));
+<#else>
+            ${instanceName}.set${attribute.getTitleCaseName()}(${fkRepoVar}.find(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()));
+</#if>
         } else {
             ${instanceName}.set${attribute.getTitleCaseName()}(null);
         }
@@ -145,7 +159,11 @@ public class ${controllerClass} {
         <#else>
         </#if>
     </#list>
+<#if model.jakartaVersion gt 10>
+        ${entityRepository}.save(${instanceName});
+<#else>
         ${entityRepository}.edit(${instanceName});
+</#if>
         return HeaderUtil.createEntityUpdateAlert(Response.ok(), ENTITY_NAME, <#if isPKPrimitive>String.valueOf(${instanceName}.${pkGetter}())<#else>${instanceName}.${pkGetter}().toString()</#if>)
                 .entity(${instanceName}).build();
     }
@@ -167,7 +185,11 @@ public class ${controllerClass} {
     <#if pagination == "no">
     public List<${instanceType}> getAll${EntityClassPlural}() {
         LOG.log(Level.FINE, "REST request to get all ${EntityClassPlural}");
+<#if model.jakartaVersion gt 10>
+        List<${EntityClass}> ${entityInstancePlural} = ${entityRepository}.findAll().toList();
+<#else>
         List<${EntityClass}> ${entityInstancePlural} = ${entityRepository}.findAll();
+</#if>
         return ${entityInstancePlural};
     }
     <#else>
@@ -195,10 +217,16 @@ public class ${controllerClass} {
     @Produces(MediaType.APPLICATION_JSON)
     public Response get${EntityClass}(@PathParam("${pkName}") ${pkType} ${pkName}) {
         LOG.log(Level.FINE, "REST request to get ${EntityClass} : {}", ${pkName});
+<#if model.jakartaVersion gt 10>
+        return ${entityRepository}.findById(${pkName})
+                .map(res -> Response.status(Response.Status.OK).entity(res).build())
+                .orElse(Response.status(Response.Status.NOT_FOUND).build());
+<#else>
         ${instanceType} ${instanceName} = ${entityRepository}.find(${pkName});
         return Optional.ofNullable(${instanceName})
                 .map(res -> Response.status(Response.Status.OK).entity(${instanceName}).build())
                 .orElse(Response.status(Response.Status.NOT_FOUND).build());
+</#if>
     }
 
     /**
@@ -215,7 +243,11 @@ public class ${controllerClass} {
     @Path("/{${pkName}}")
     public Response remove${EntityClass}(@PathParam("${pkName}") ${pkType} ${pkName}) {
         LOG.log(Level.FINE, "REST request to delete ${EntityClass} : {}", ${pkName});
+<#if model.jakartaVersion gt 10>
+        ${entityRepository}.deleteById(${pkName});
+<#else>
         ${entityRepository}.remove(${entityRepository}.find(${pkName}));
+</#if>
         return HeaderUtil.createEntityDeletionAlert(Response.ok(), ENTITY_NAME, <#if isPKPrimitive>String.valueOf(${pkName})<#else>${pkName}.toString()</#if>).build();
     }
 
