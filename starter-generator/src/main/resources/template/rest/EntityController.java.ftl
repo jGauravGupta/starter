@@ -99,7 +99,11 @@ public class ${controllerClass} {
             <#if attribute.multi>
             <#else>
         if (${instanceName}.get${attribute.getTitleCaseName()}() != null && ${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}() != null) {
+<#if model.jakartaVersion gt 10>
+            ${instanceName}.set${attribute.getTitleCaseName()}(${attribute.name}${EntityRepositorySuffix}.findById(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()).orElse(null));
+<#else>
             ${instanceName}.set${attribute.getTitleCaseName()}(${attribute.name}${EntityRepositorySuffix}.find(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()));
+</#if>
         } else {
             ${instanceName}.set${attribute.getTitleCaseName()}(null);
         }
@@ -141,7 +145,11 @@ public class ${controllerClass} {
             <#if attribute.multi>
             <#else>
         if (${instanceName}.get${attribute.getTitleCaseName()}() != null && ${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}() != null) {
+<#if model.jakartaVersion gt 10>
+            ${instanceName}.set${attribute.getTitleCaseName()}(${attribute.name}${EntityRepositorySuffix}.findById(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()).orElse(null));
+<#else>
             ${instanceName}.set${attribute.getTitleCaseName()}(${attribute.name}${EntityRepositorySuffix}.find(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()));
+</#if>
         } else {
             ${instanceName}.set${attribute.getTitleCaseName()}(null);
         }
@@ -175,7 +183,11 @@ public class ${controllerClass} {
     <#if pagination == "no">
     public List<${instanceType}> getAll${EntityClassPlural}() {
         LOG.log(Level.FINE, "REST request to get all ${EntityClassPlural}");
+<#if model.jakartaVersion gt 10>
+        List<${EntityClass}> ${entityInstancePlural} = ${entityRepository}.findAll().toList();
+<#else>
         List<${EntityClass}> ${entityInstancePlural} = ${entityRepository}.findAll();
+</#if>
         return ${entityInstancePlural};
     }
     <#else>

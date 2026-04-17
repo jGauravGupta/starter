@@ -311,4 +311,78 @@ class JakartaDataGeneratorTest {
         assertFalse(content.contains("employeeService.deleteById("),
                 "Legacy REST controller should NOT call repository.deleteById() for Jakarta EE 10");
     }
+
+    // -----------------------------------------------------------------------
+    // Bug-fix: Converter – .find() vs .findById().orElse(null)
+    // -----------------------------------------------------------------------
+
+    @Test
+    void jakartaEE11_converterUsesFindById() throws IOException {
+        generate(buildModel(11), "jsf");
+
+        String content = readFile(generatedFile("converter", "EmployeeConverter.java"));
+        assertTrue(content.contains(".findById(") && content.contains(".orElse(null)"),
+                "Converter should call findById(...).orElse(null) for Jakarta EE 11");
+        assertFalse(content.contains("employeeService.find("),
+                "Converter should NOT call find() for Jakarta EE 11");
+    }
+
+    @Test
+    void legacyEE10_converterUsesFind() throws IOException {
+        generate(buildModel(10), "jsf");
+
+        String content = readFile(generatedFile("converter", "EmployeeConverter.java"));
+        assertTrue(content.contains("employeeService.find("),
+                "Converter should call find() for Jakarta EE 10");
+        assertFalse(content.contains(".findById("),
+                "Converter should NOT call findById() for Jakarta EE 10");
+    }
+
+    // -----------------------------------------------------------------------
+    // Bug-fix: JSF bean – findAll() returns Stream in Jakarta Data
+    // -----------------------------------------------------------------------
+
+    @Test
+    void jakartaEE11_jsfBeanFindAllConvertsToList() throws IOException {
+        generate(buildModel(11), "jsf");
+
+        String content = readFile(generatedFile(CONTROLLER_LAYER, "EmployeeBean.java"));
+        assertTrue(content.contains("findAll().toList()"),
+                "JSF bean getAll method should call findAll().toList() for Jakarta EE 11");
+    }
+
+    @Test
+    void legacyEE10_jsfBeanFindAllReturnsList() throws IOException {
+        generate(buildModel(10), "jsf");
+
+        String content = readFile(generatedFile(CONTROLLER_LAYER, "EmployeeBean.java"));
+        assertFalse(content.contains("findAll().toList()"),
+                "Legacy JSF bean should NOT call findAll().toList() for Jakarta EE 10");
+        assertTrue(content.contains("findAll()"),
+                "Legacy JSF bean should call findAll() directly for Jakarta EE 10");
+    }
+
+    // -----------------------------------------------------------------------
+    // Bug-fix: REST controller – findAll() returns Stream in Jakarta Data
+    // -----------------------------------------------------------------------
+
+    @Test
+    void jakartaEE11_restControllerFindAllConvertsToList() throws IOException {
+        generate(buildModel(11), "html");
+
+        String content = readFile(generatedFile(CONTROLLER_LAYER, "EmployeeResource.java"));
+        assertTrue(content.contains("findAll().toList()"),
+                "REST controller getAll method should call findAll().toList() for Jakarta EE 11");
+    }
+
+    @Test
+    void legacyEE10_restControllerFindAllReturnsList() throws IOException {
+        generate(buildModel(10), "html");
+
+        String content = readFile(generatedFile(CONTROLLER_LAYER, "EmployeeResource.java"));
+        assertFalse(content.contains("findAll().toList()"),
+                "Legacy REST controller should NOT call findAll().toList() for Jakarta EE 10");
+        assertTrue(content.contains("findAll()"),
+                "Legacy REST controller should call findAll() directly for Jakarta EE 10");
+    }
 }

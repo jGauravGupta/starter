@@ -58,7 +58,11 @@ public class ${entityConverterClass} implements Converter<${instanceType}> {
         if (value == null || value.isEmpty()) {
             return null;
         }
+<#if model.jakartaVersion gt 10>
+        return ${entityRepository}.findById(${pkType}.valueOf(value)).orElse(null);
+<#else>
         return ${entityRepository}.find(${pkType}.valueOf(value));
+</#if>
     }
 
     @Override

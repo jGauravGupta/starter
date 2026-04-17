@@ -39,7 +39,11 @@ public class ${beanClass} implements Serializable {
     }
 
     public List<${EntityClass}> getAll${EntityClassPlural}() {
+<#if model.jakartaVersion gt 10>
+        return ${entityRepository}.findAll().toList();
+<#else>
         return ${entityRepository}.findAll();
+</#if>
     }
 
     public String create() {
