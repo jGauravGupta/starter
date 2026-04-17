@@ -39,6 +39,7 @@
 package fish.payara.starter.application.generator;
 
 import fish.payara.starter.application.domain.ERModel;
+import fish.payara.starter.application.domain.Relationship;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -493,5 +494,96 @@ class JakartaDataGeneratorTest {
                 .count();
         assertEquals(1, declarationCount,
                 "BidResource (EE 10) should declare bidService exactly once");
+    }
+
+    // -----------------------------------------------------------------------
+    // Bug-fix: REST controller – wrong FK repository used when AI sets
+    //          relationshipVarNameInFirstEntity to the entity's own instance name
+    //          (e.g. "bid" for BID→PAYMENT causes bidService to be used instead
+    //          of paymentService, yielding "Bid cannot be converted to Payment")
+    // -----------------------------------------------------------------------
+
+    private static final String ER_DIAGRAM_BID_PAYMENT = """
+            erDiagram
+                BID {
+                    int bidId PK
+                    decimal amount
+                }
+                PAYMENT {
+                    int paymentId PK
+                    decimal total
+                }
+                ITEM {
+                    int itemId PK
+                    string name
+                }
+                SHIPPING {
+                    int shippingId PK
+                    string address
+                }
+                BID }o--|| PAYMENT : payment
+                ITEM }o--|| SHIPPING : shipping
+            """;
+
+    /**
+     * Builds a model that simulates the AI-enhanced scenario where
+     * {@code relationshipVarNameInFirstEntity} is set to the entity's own
+     * instance name (e.g. {@code "bid"} for the BID→PAYMENT relationship and
+     * {@code "item"} for the ITEM→SHIPPING relationship).  This causes the FK
+     * attribute name to collide with the primary entity repository field and
+     * previously resulted in the wrong repository being called in the generated
+     * REST controller body.
+     */
+    private ERModel buildCollisionModel(double jakartaVersion) {
+        ERDiagramParser parser = new ERDiagramParser();
+        ERModel model = parser.parse(ER_DIAGRAM_BID_PAYMENT);
+        // Simulate what the AI does: set var names that collide with entity instance names
+        for (Relationship rel : model.getRelationships()) {
+            if ("Bid".equals(rel.getFirstEntityClass()) && "Payment".equals(rel.getSecondEntityClass())) {
+                rel.setRelationshipVarNameInFirstEntity("bid");
+            }
+            if ("Item".equals(rel.getFirstEntityClass()) && "Shipping".equals(rel.getSecondEntityClass())) {
+                rel.setRelationshipVarNameInFirstEntity("item");
+            }
+        }
+        model.setImportPrefix("jakarta");
+        model.setJakartaVersion(jakartaVersion);
+        return model;
+    }
+
+    @Test
+    void jakartaEE11_bidResourceUsesPaymentServiceForPaymentFk() throws IOException {
+        generate(buildCollisionModel(11), "html");
+
+        String content = readFile(generatedFile(CONTROLLER_LAYER, "BidResource.java"));
+        assertTrue(content.contains("paymentService.findById"),
+                "BidResource should call paymentService.findById() for the Payment FK, not bidService.findById()");
+        assertFalse(content.lines()
+                        .anyMatch(l -> l.contains("bidService.findById") && l.contains("getPaymentId")),
+                "BidResource must not call bidService.findById() for the Payment FK lookup");
+    }
+
+    @Test
+    void jakartaEE11_itemResourceUsesShippingServiceForShippingFk() throws IOException {
+        generate(buildCollisionModel(11), "html");
+
+        String content = readFile(generatedFile(CONTROLLER_LAYER, "ItemResource.java"));
+        assertTrue(content.contains("shippingService.findById"),
+                "ItemResource should call shippingService.findById() for the Shipping FK, not itemService.findById()");
+        assertFalse(content.lines()
+                        .anyMatch(l -> l.contains("itemService.findById") && l.contains("getShippingId")),
+                "ItemResource must not call itemService.findById() for the Shipping FK lookup");
+    }
+
+    @Test
+    void jakartaEE11_collisionModel_paymentServiceFieldDeclaredInBidResource() throws IOException {
+        generate(buildCollisionModel(11), "html");
+
+        String content = readFile(generatedFile(CONTROLLER_LAYER, "BidResource.java"));
+        long count = content.lines()
+                .filter(l -> l.contains("private") && l.contains("PaymentService") && l.contains("paymentService"))
+                .count();
+        assertEquals(1, count,
+                "BidResource should declare exactly one PaymentService field for the Payment FK");
     }
 }

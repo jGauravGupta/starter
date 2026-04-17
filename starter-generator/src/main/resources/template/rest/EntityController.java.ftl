@@ -61,7 +61,7 @@ public class ${controllerClass} {
 
     <#list entity.attributes as attribute>
         <#if model.getEntity(attribute.getType())??>
-            <#assign fkFieldName = attribute.name + EntityRepositorySuffix>
+            <#assign fkFieldName = attribute.getType()?uncap_first + EntityRepositorySuffix>
             <#if !attribute.multi && fkFieldName != entityRepository>
     @Inject
     private ${attribute.getType()}${EntityRepositorySuffix} ${fkFieldName};
@@ -93,11 +93,12 @@ public class ${controllerClass} {
         <#if model.getEntity(attribute.type)??>
             <#if attribute.multi>
             <#else>
+                <#assign fkRepoVar = attribute.getType()?uncap_first + EntityRepositorySuffix>
         if (${instanceName}.get${attribute.getTitleCaseName()}() != null && ${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}() != null) {
 <#if model.jakartaVersion gt 10>
-            ${instanceName}.set${attribute.getTitleCaseName()}(${attribute.name}${EntityRepositorySuffix}.findById(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()).orElse(null));
+            ${instanceName}.set${attribute.getTitleCaseName()}(${fkRepoVar}.findById(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()).orElse(null));
 <#else>
-            ${instanceName}.set${attribute.getTitleCaseName()}(${attribute.name}${EntityRepositorySuffix}.find(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()));
+            ${instanceName}.set${attribute.getTitleCaseName()}(${fkRepoVar}.find(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()));
 </#if>
         } else {
             ${instanceName}.set${attribute.getTitleCaseName()}(null);
@@ -139,11 +140,12 @@ public class ${controllerClass} {
         <#if model.getEntity(attribute.type)??>
             <#if attribute.multi>
             <#else>
+                <#assign fkRepoVar = attribute.getType()?uncap_first + EntityRepositorySuffix>
         if (${instanceName}.get${attribute.getTitleCaseName()}() != null && ${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}() != null) {
 <#if model.jakartaVersion gt 10>
-            ${instanceName}.set${attribute.getTitleCaseName()}(${attribute.name}${EntityRepositorySuffix}.findById(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()).orElse(null));
+            ${instanceName}.set${attribute.getTitleCaseName()}(${fkRepoVar}.findById(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()).orElse(null));
 <#else>
-            ${instanceName}.set${attribute.getTitleCaseName()}(${attribute.name}${EntityRepositorySuffix}.find(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()));
+            ${instanceName}.set${attribute.getTitleCaseName()}(${fkRepoVar}.find(${instanceName}.get${attribute.getTitleCaseName()}().get${model.getEntity(attribute.type).getPrimaryKeyFirstUpperName()}()));
 </#if>
         } else {
             ${instanceName}.set${attribute.getTitleCaseName()}(null);
