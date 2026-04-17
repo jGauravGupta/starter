@@ -387,4 +387,52 @@ class JakartaDataGeneratorTest {
         assertTrue(content.contains("findAll()"),
                 "Legacy REST controller should call findAll() directly for Jakarta EE 10");
     }
+
+    // -----------------------------------------------------------------------
+    // Bug-fix: persistence.xml – correct JPA schema version per EE version
+    // -----------------------------------------------------------------------
+
+    private File persistenceXml() {
+        return new File(outputDir, "src/main/resources/META-INF/persistence.xml");
+    }
+
+    @Test
+    void jakartaEE11_persistenceXmlUsesJpa32Schema() throws IOException {
+        generate(buildModel(11), "html");
+
+        String content = readFile(persistenceXml());
+        assertTrue(content.contains("version=\"3.2\""),
+                "persistence.xml should declare version 3.2 for Jakarta EE 11 (JPA 3.2)");
+        assertTrue(content.contains("persistence_3_2.xsd"),
+                "persistence.xml schema location should reference persistence_3_2.xsd for Jakarta EE 11");
+        assertFalse(content.contains("version=\"3.0\""),
+                "persistence.xml should NOT use version 3.0 for Jakarta EE 11");
+    }
+
+    @Test
+    void jakartaEE10_persistenceXmlUsesJpa31Schema() throws IOException {
+        generate(buildModel(10), "html");
+
+        String content = readFile(persistenceXml());
+        assertTrue(content.contains("version=\"3.1\""),
+                "persistence.xml should declare version 3.1 for Jakarta EE 10 (JPA 3.1)");
+        assertTrue(content.contains("persistence_3_1.xsd"),
+                "persistence.xml schema location should reference persistence_3_1.xsd for Jakarta EE 10");
+        assertFalse(content.contains("version=\"3.2\""),
+                "persistence.xml should NOT use version 3.2 for Jakarta EE 10");
+    }
+
+    @Test
+    void legacyJavaxEE8_persistenceXmlUsesJpa21Schema() throws IOException {
+        ERModel model = new ERDiagramParser().parse(ER_DIAGRAM);
+        model.setImportPrefix("javax");
+        model.setJakartaVersion(8);
+        generate(model, "html");
+
+        String content = readFile(persistenceXml());
+        assertTrue(content.contains("version=\"2.1\""),
+                "persistence.xml should declare version 2.1 for legacy javax (EE 8)");
+        assertTrue(content.contains("persistence_2_1.xsd"),
+                "persistence.xml schema location should reference persistence_2_1.xsd for EE 8");
+    }
 }
