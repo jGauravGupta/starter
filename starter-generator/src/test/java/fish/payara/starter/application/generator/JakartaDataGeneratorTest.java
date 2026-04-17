@@ -321,8 +321,10 @@ class JakartaDataGeneratorTest {
         generate(buildModel(11), "jsf");
 
         String content = readFile(generatedFile("converter", "EmployeeConverter.java"));
-        assertTrue(content.contains(".findById(") && content.contains(".orElse(null)"),
-                "Converter should call findById(...).orElse(null) for Jakarta EE 11");
+        assertTrue(content.contains(".findById("),
+                "Converter should call findById() for Jakarta EE 11");
+        assertTrue(content.contains(".orElse(null)"),
+                "Converter findById() result should use .orElse(null) for Jakarta EE 11");
         assertFalse(content.contains("employeeService.find("),
                 "Converter should NOT call find() for Jakarta EE 11");
     }
