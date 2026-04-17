@@ -61,6 +61,11 @@ public class ${controllerClass} {
 
     <#list entity.attributes as attribute>
         <#if model.getEntity(attribute.getType())??>
+            <#-- Derive the repo field name from the FK entity TYPE (not attribute name) so that
+                 a custom attribute name that collides with the entity's own instance variable
+                 (e.g. name="bid" for a Bid->Payment FK set by AI) still resolves to the correct
+                 repository (e.g. paymentService).  For self-referential FKs the type-based name
+                 equals entityRepository, so the guard below suppresses the duplicate field. -->
             <#assign fkFieldName = attribute.getType()?uncap_first + EntityRepositorySuffix>
             <#if !attribute.multi && fkFieldName != entityRepository>
     @Inject
