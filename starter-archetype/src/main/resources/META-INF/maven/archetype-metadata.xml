@@ -152,6 +152,10 @@ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
             <defaultValue>none</defaultValue>
             <validationRegex>^(none|jsf|html)$</validationRegex>
         </requiredProperty>
+        <requiredProperty key="dockerJdkTagSupported">
+            <defaultValue>true</defaultValue>
+            <validationRegex>^(false|true)$</validationRegex>
+        </requiredProperty>
     </requiredProperties>
 
     <fileSets>
