@@ -15,7 +15,9 @@
 #set ($imageRepo = "payara/micro")
 #end
 #if (${dockerJdkTagSupported} == 'true')
-#if (${javaVersion} == '21')
+#if (${javaVersion} == '25')
+#set ($baseImage = "${imageRepo}:${payaraVersion}-jdk25")
+#elseif (${javaVersion} == '21')
 #set ($baseImage = "${imageRepo}:${payaraVersion}-jdk21")
 #elseif (${javaVersion} == '17')
 #set ($baseImage = "${imageRepo}:${payaraVersion}-jdk17")
