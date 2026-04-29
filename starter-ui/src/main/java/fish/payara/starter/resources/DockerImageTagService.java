@@ -91,7 +91,7 @@ public class DockerImageTagService {
             int responseCode = connection.getResponseCode();
             connection.disconnect();
             boolean exists = responseCode == HttpURLConnection.HTTP_OK;
-            LOGGER.log(Level.INFO, "Docker Hub tag {0} exists: {1}", new Object[]{tag, exists});
+            LOGGER.log(Level.FINE, "Docker Hub tag {0} exists: {1}", new Object[]{tag, exists});
             return exists;
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed to check Docker Hub tag availability for {0}, assuming tag exists: {1}",
