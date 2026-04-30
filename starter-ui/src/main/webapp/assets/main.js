@@ -277,7 +277,9 @@ function listJavaVersionOption() {
     } else {
         if (compareVersion(payaraVersion, '6.2023.11') > 0) {
             // Payara version is greater than '6.2023.11'
-            addJavaVersionOption('25', 'Java SE 25');
+            if (payaraVersion.startsWith('7.')) {
+                addJavaVersionOption('25', 'Java SE 25');
+            }
             addJavaVersionOption('21', 'Java SE 21');
         }
         addJavaVersionOption('17', 'Java SE 17');
