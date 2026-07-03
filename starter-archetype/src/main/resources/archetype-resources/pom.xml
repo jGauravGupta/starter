@@ -147,6 +147,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-test-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-resource</artifactId>
             <scope>test</scope>
@@ -194,7 +199,7 @@
 #if (${javaVersion} == '8')
                 <version>2.0</version>
 #else
-                <version>2.5.2</version>
+                <version>2.6.0</version>
 #end
                 <configuration>
                     <payaraMicroVersion>${payara.version}</payaraMicroVersion>
@@ -216,7 +221,7 @@
             <plugin>
                     <groupId>fish.payara.maven.plugins</groupId>
                     <artifactId>payara-server-maven-plugin</artifactId>
-                    <version>1.0.0-Alpha4</version>
+                    <version>1.3.0</version>
                     <configuration>
                         <payaraServerVersion>${payara.version}</payaraServerVersion>
                     </configuration>
